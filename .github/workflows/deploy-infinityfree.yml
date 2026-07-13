@@ -28,7 +28,7 @@ jobs:
           protocol: ftps
           port: 21
           local-dir: ./
-          server-dir: htdocs/
+          server-dir: ustporoq.fast-page.org/htdocs/
           exclude: |
             **/.git*
             **/.git*/**
