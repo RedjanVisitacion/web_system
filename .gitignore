@@ -1,0 +1,7 @@
+# Local agent/editor files
+.agents/
+.codex/
+
+# Deployment archive and local logs
+attendance-web.zip
+debug.log
