@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js?v=20260713-firebase-key-fix";
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
