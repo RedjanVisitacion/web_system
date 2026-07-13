@@ -35,10 +35,20 @@
 
             <form id="login-form" class="login-form" novalidate>
               <div class="field">
-                <label for="email">Email address</label>
+                <label for="student-id">Student ID</label>
                 <div class="input-frame">
-                  <i class="bi bi-envelope" aria-hidden="true"></i>
-                  <input id="email" name="email" type="email" placeholder="Enter your email address" autocomplete="email" required />
+                  <i class="bi bi-person-badge" aria-hidden="true"></i>
+                  <input
+                    id="student-id"
+                    name="studentId"
+                    type="text"
+                    inputmode="numeric"
+                    pattern="\d{10}"
+                    maxlength="10"
+                    placeholder="e.g. 2023304637"
+                    autocomplete="username"
+                    required
+                  />
                 </div>
               </div>
 
@@ -67,11 +77,15 @@
             </header>
             <div class="login-heading dashboard-heading">
               <h2>Welcome back</h2>
-              <p id="signed-in-email"></p>
+              <p id="signed-in-student-id"></p>
+              <p id="signed-in-name" class="signed-in-name"></p>
             </div>
             <div class="ready-panel">
               <i class="bi bi-check2-circle" aria-hidden="true"></i>
-              <div><strong>Firebase is connected</strong><span>Attendance sessions, student records, and reports can be added next.</span></div>
+              <div>
+                <strong id="bootstrap-status">Firebase is connected</strong>
+                <span id="bootstrap-detail">Attendance sessions, student records, and reports can be added next.</span>
+              </div>
             </div>
             <button id="logout-button" class="btn btn--secondary" type="button"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Sign out</span></button>
           </div>
@@ -81,6 +95,6 @@
       </section>
     </main>
 
-    <script type="module" src="assets/js/app.js?v=20260713-firebase-key-fix"></script>
+    <script type="module" src="assets/js/app.js?v=20260713-student-id-login"></script>
   </body>
 </html>
