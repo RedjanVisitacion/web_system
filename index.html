@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Attendance System administrator portal" />
+    <title>Attendance System | Admin</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="brand-panel" aria-labelledby="system-title">
+        <p class="eyebrow">Attendance System</p>
+        <h1 id="system-title">Simple, accountable attendance.</h1>
+        <p>
+          The administrator portal is connected to Firebase Authentication and
+          Cloud Firestore.
+        </p>
+      </section>
+
+      <section class="card" aria-live="polite">
+        <div id="login-view">
+          <p class="eyebrow">Administrator access</p>
+          <h2>Sign in</h2>
+          <p class="muted">Use an administrator account created in Firebase Authentication.</p>
+
+          <form id="login-form" novalidate>
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" autocomplete="email" required />
+
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required />
+
+            <p id="form-message" class="message" role="alert" hidden></p>
+            <button id="login-button" type="submit">Sign in securely</button>
+          </form>
+        </div>
+
+        <div id="dashboard-view" hidden>
+          <p class="eyebrow">Administrator portal</p>
+          <h2>Welcome</h2>
+          <p id="signed-in-email" class="muted"></p>
+          <p>
+            Firebase is connected. Attendance sessions, student management, and
+            reports can be added here next.
+          </p>
+          <button id="logout-button" class="secondary" type="button">Sign out</button>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="assets/js/app.js"></script>
+  </body>
+</html>
