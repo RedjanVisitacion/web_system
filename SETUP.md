@@ -8,29 +8,19 @@ Login uses **Firestore only**: the student ID and password entered on the login 
 
 Open **Databases & Storage** → **Firestore Database** → **Create database**. Choose the location nearest to the school and select **Production mode**.
 
-## 2. Add a user account in Firestore
+## 2. User accounts in Firestore
 
-Create collection `users`. You can use either layout below.
-
-### Recommended: document ID = student ID
+The login page **automatically creates** a user document on first sign-in when no matching account exists yet.
 
 | Setting | Value |
 | --- | --- |
 | Collection | `users` |
-| Document ID | `2023304637` |
-| Fields | see below |
+| Document ID | Same as the 10-digit student ID (for example `2023304637`) |
+| Auto-created fields | `studentNo`, `password`, `fullName`, `role`, `active`, `autoCreated`, `createdAt` |
 
-```text
-studentNo: "2023304637"
-password: "Redjan09"
-fullName: "Redjan Phil S. Visitacion"
-role: "admin"
-active: true
-```
+**First account rule:** The very first user created becomes an **administrator** (`role: "admin"`). Every later auto-created account is a **student** (`role: "student"`).
 
-### Also supported: any document ID with studentNo field
-
-If you already created a document with an auto-generated ID, just make sure it includes at least:
+You can still add accounts manually in the Firebase Console if you prefer:
 
 ```text
 studentNo: "2023304637"
@@ -41,6 +31,8 @@ active: true
 ```
 
 Set `role` to `admin` for administrators or `student` for students. Set `active` to `false` to block sign-in.
+
+**Important:** Delete any empty `users` documents (for example auto-generated IDs with no fields). They are not used for login and can block troubleshooting.
 
 ## 3. Publish Firestore rules
 
@@ -55,12 +47,26 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
+      function validNewUser() {
+        return isStudentId(userId)
+          && request.resource.data.keys().hasAll(['studentNo', 'password', 'fullName', 'role', 'active'])
+          && request.resource.data.studentNo == userId
+          && request.resource.data.studentNo.matches('^\\d{10}$')
+          && request.resource.data.password is string
+          && request.resource.data.password.size() >= 4
+          && request.resource.data.fullName is string
+          && request.resource.data.role in ['student', 'admin']
+          && request.resource.data.active == true;
+      }
+
       allow get: if isStudentId(userId)
         && resource.data.password is string;
       allow list: if resource.data.studentNo is string
         && resource.data.studentNo.matches('^\\d{10}$')
         && resource.data.password is string;
-      allow create, update, delete: if false;
+      allow create: if validNewUser()
+        && !exists(/databases/$(database)/documents/users/$(userId));
+      allow update, delete: if false;
     }
 
     match /schoolSettings/{document} {
@@ -82,11 +88,13 @@ service cloud.firestore {
 }
 ```
 
-These rules allow the login page to read one user record for sign-in, but prevent visitors from creating or editing user accounts from the browser.
+These rules allow the login page to read one user record for sign-in and to create a new account on first sign-in. Visitors cannot edit or delete user accounts from the browser.
 
 ## 4. Automatic database bootstrap
 
-When an **administrator** signs in, the web app automatically creates default Firestore documents if they do not exist yet:
+On **first sign-in**, the web app automatically creates a `users` document when no matching account exists.
+
+When an **administrator** signs in, the web app also creates default Firestore documents if they do not exist yet:
 
 | Path | Purpose |
 | --- | --- |
@@ -119,9 +127,11 @@ Sign in with your **10-digit student ID** and the **password stored in Firestore
 
 If you see **"The student ID or password is incorrect"**, check these in order:
 
-1. Firestore document exists in `users` with matching `studentNo` (or document ID equals the student ID).
+1. Firestore document exists in `users` with matching `studentNo` (or document ID equals the student ID), or sign in again to auto-create it.
 2. `password` field in Firestore exactly matches what you type on the login page.
 3. `active` is not set to `false`.
 4. Firestore rules from section 3 are published.
+
+If you see **"Database access denied"**, open Firebase Console → Firestore → Rules and publish the rules from section 3.
 
 If you see **"Could not reach the database"**, check your internet connection and confirm Firestore is enabled for the project.

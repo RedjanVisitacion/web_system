@@ -6,6 +6,8 @@ import {
   getDocs,
   limit,
   query,
+  serverTimestamp,
+  setDoc,
   where,
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
@@ -20,28 +22,54 @@ function toSessionUser(documentSnapshot) {
   };
 }
 
-export async function loginWithStudentCredentials(studentId, password) {
+async function findUserDocument(studentId) {
   const directRef = doc(db, "users", studentId);
   const directSnapshot = await getDoc(directRef);
 
-  let userSnapshot = directSnapshot.exists() ? directSnapshot : null;
-
-  if (!userSnapshot) {
-    const matches = await getDocs(
-      query(
-        collection(db, "users"),
-        where("studentNo", "==", studentId),
-        limit(1),
-      ),
-    );
-
-    if (!matches.empty) {
-      userSnapshot = matches.docs[0];
-    }
+  if (directSnapshot.exists()) {
+    return directSnapshot;
   }
 
+  const matches = await getDocs(
+    query(
+      collection(db, "users"),
+      where("studentNo", "==", studentId),
+      limit(1),
+    ),
+  );
+
+  return matches.empty ? null : matches.docs[0];
+}
+
+async function isFirstUserAccount() {
+  const snapshot = await getDocs(query(collection(db, "users"), limit(1)));
+  return snapshot.empty;
+}
+
+async function createUserAccount(studentId, password) {
+  const ref = doc(db, "users", studentId);
+  const firstAccount = await isFirstUserAccount();
+
+  await setDoc(ref, {
+    studentNo: studentId,
+    password,
+    fullName: "Student",
+    role: firstAccount ? "admin" : "student",
+    active: true,
+    autoCreated: true,
+    createdAt: serverTimestamp(),
+  });
+
+  const snapshot = await getDoc(ref);
+  return toSessionUser(snapshot);
+}
+
+export async function loginWithStudentCredentials(studentId, password) {
+  let userSnapshot = await findUserDocument(studentId);
+
   if (!userSnapshot) {
-    return { ok: false, reason: "not-found" };
+    const user = await createUserAccount(studentId, password);
+    return { ok: true, user, created: true };
   }
 
   const data = userSnapshot.data();
@@ -57,6 +85,7 @@ export async function loginWithStudentCredentials(studentId, password) {
   return {
     ok: true,
     user: toSessionUser(userSnapshot),
+    created: false,
   };
 }
 
