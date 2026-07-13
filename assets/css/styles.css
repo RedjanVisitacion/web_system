@@ -46,6 +46,7 @@ button, input { font: inherit; }
 .login-card { width: min(500px, 100%); padding: clamp(28px, 3vw, 36px); border: 1px solid rgba(203,213,225,.78); border-radius: 28px; background: rgba(255,255,255,.78); box-shadow: 0 28px 86px rgba(15,23,42,.1), inset 0 1px 0 rgba(255,255,255,.9); }
 .login-brand { display: flex; align-items: center; justify-content: center; min-height: 126px; }
 .ustp-login-logo { display: block; width: min(180px, 62%); height: auto; }
+.modern-attendance-title { margin: 0; color: var(--deep-blue); font-size: clamp(1.5rem, 2.7vw, 2rem); font-weight: 900; letter-spacing: -.045em; }
 .brand-mark { display: grid; width: 46px; height: 46px; place-items: center; border: 1px solid var(--border); border-radius: 13px; color: var(--blue); font-size: 20px; background: #fff; box-shadow: 0 14px 30px rgba(15,23,42,.08); }
 .login-brand strong, .login-brand span { display: block; }
 .login-brand strong { color: var(--text); font-size: 16px; font-weight: 800; }
