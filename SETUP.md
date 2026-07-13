@@ -61,9 +61,7 @@ service cloud.firestore {
 
       allow get: if isStudentId(userId)
         && resource.data.password is string;
-      allow list: if resource.data.studentNo is string
-        && resource.data.studentNo.matches('^\\d{10}$')
-        && resource.data.password is string;
+      allow list: if false;
       allow create: if validNewUser()
         && !exists(/databases/$(database)/documents/users/$(userId));
       allow update, delete: if false;
@@ -88,7 +86,7 @@ service cloud.firestore {
 }
 ```
 
-These rules allow the login page to read one user record for sign-in and to create a new account on first sign-in. Visitors cannot edit or delete user accounts from the browser.
+These rules allow the login page to read one user record by student ID and to create a new account on first sign-in. Collection-wide user queries are blocked from the browser.
 
 ## 4. Automatic database bootstrap
 
@@ -138,8 +136,7 @@ If you see **"Could not reach the database"**, check your internet connection an
 
 ### Rules are published but login still fails?
 
-Firestore blocks **unscoped list queries** on `users`. The app must not scan the whole `users` collection. If you still see database errors after publishing rules:
-
-1. Redeploy the latest `assets/js/db-login.js` and `assets/js/app.js` to your hosting site.
-2. Delete empty or invalid `users` documents (for example auto-generated IDs with no fields).
+1. Update the **Rules** tab with the latest rules from section 3 (the `allow list: if false;` line is required).
+2. Redeploy the latest `assets/js/db-login.js`, `assets/js/app.js`, and `index.html` to your hosting site.
 3. Hard-refresh the browser (Ctrl+F5) so the new JavaScript loads.
+4. Sign in again — the app will create `users/{yourStudentId}` automatically when the collection is empty.

@@ -1,14 +1,8 @@
-import { db } from "./firebase-config.js?v=20260713-firebase-key-fix";
+import { db } from "./firebase-config.js?v=20260714-login-fix";
 import {
-  collection,
   doc,
   getDoc,
-  getDocs,
-  limit,
-  query,
-  serverTimestamp,
   setDoc,
-  where,
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 function toSessionUser(documentSnapshot) {
@@ -23,22 +17,8 @@ function toSessionUser(documentSnapshot) {
 }
 
 async function findUserDocument(studentId) {
-  const directRef = doc(db, "users", studentId);
-  const directSnapshot = await getDoc(directRef);
-
-  if (directSnapshot.exists()) {
-    return directSnapshot;
-  }
-
-  const matches = await getDocs(
-    query(
-      collection(db, "users"),
-      where("studentNo", "==", studentId),
-      limit(1),
-    ),
-  );
-
-  return matches.empty ? null : matches.docs[0];
+  const snapshot = await getDoc(doc(db, "users", studentId));
+  return snapshot.exists() ? snapshot : null;
 }
 
 async function isFirstUserAccount() {
@@ -49,23 +29,26 @@ async function isFirstUserAccount() {
 async function createUserAccount(studentId, password) {
   const ref = doc(db, "users", studentId);
   const firstAccount = await isFirstUserAccount();
+  const role = firstAccount ? "admin" : "student";
 
   await setDoc(ref, {
     studentNo: studentId,
     password,
     fullName: "Student",
-    role: firstAccount ? "admin" : "student",
+    role,
     active: true,
-    autoCreated: true,
-    createdAt: serverTimestamp(),
   });
 
-  const snapshot = await getDoc(ref);
-  return toSessionUser(snapshot);
+  return {
+    id: studentId,
+    studentNo: studentId,
+    fullName: "Student",
+    role,
+  };
 }
 
 export async function loginWithStudentCredentials(studentId, password) {
-  let userSnapshot = await findUserDocument(studentId);
+  const userSnapshot = await findUserDocument(studentId);
 
   if (!userSnapshot) {
     const user = await createUserAccount(studentId, password);
