@@ -1,24 +1,25 @@
-import { auth, db } from "./firebase-config.js?v=20260713-firebase-key-fix";
+import { auth } from "./firebase-config.js?v=20260713-firebase-key-fix";
 import {
   isValidStudentId,
   studentIdToAuthEmail,
   authEmailToStudentId,
 } from "./auth-helpers.js?v=20260713-student-id-login";
+import { resolveAuthEmails } from "./auth-resolver.js?v=20260713-student-id-login";
 import { bootstrapFirestore } from "./firestore-bootstrap.js?v=20260713-student-id-login";
+import { ensureAdminProfile } from "./user-profile.js?v=20260713-student-id-login";
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import {
-  doc,
-  getDoc,
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const loginForm = document.querySelector("#login-form");
 const loginButton = document.querySelector("#login-button");
 const loginButtonLabel = loginButton.querySelector("span");
 const logoutButton = document.querySelector("#logout-button");
+const passwordInput = document.querySelector("#password");
+const passwordToggle = document.querySelector("#password-toggle");
+const passwordToggleIcon = passwordToggle.querySelector("i");
 const message = document.querySelector("#form-message");
 const loginView = document.querySelector("#login-view");
 const dashboardView = document.querySelector("#dashboard-view");
@@ -26,6 +27,8 @@ const signedInStudentId = document.querySelector("#signed-in-student-id");
 const signedInName = document.querySelector("#signed-in-name");
 const bootstrapStatus = document.querySelector("#bootstrap-status");
 const bootstrapDetail = document.querySelector("#bootstrap-detail");
+
+let pendingStudentId = null;
 
 function showMessage(text) {
   message.textContent = text;
@@ -56,16 +59,22 @@ function setBootstrapStatus(title, detail) {
   bootstrapDetail.textContent = detail;
 }
 
-function signInErrorMessage(error) {
+function isRecoverableSignInError(code) {
+  return code === "auth/invalid-credential"
+    || code === "auth/user-not-found"
+    || code === "auth/wrong-password";
+}
+
+function signInErrorMessage(error, studentId) {
   switch (error.code) {
     case "auth/invalid-credential":
     case "auth/user-not-found":
     case "auth/wrong-password":
-      return "The student ID or password is incorrect.";
+      return `The student ID or password is incorrect. In Firebase Authentication, the account email must be ${studentIdToAuthEmail(studentId)}.`;
     case "auth/operation-not-allowed":
       return "Email/Password sign-in is not enabled in Firebase Authentication.";
     case "auth/unauthorized-domain":
-      return "This website address is not authorized in Firebase. Open it with Live Server (localhost), not as a file.";
+      return "This website address is not authorized in Firebase. Add ustporoq.fast-page.org under Authentication → Settings → Authorized domains.";
     case "auth/network-request-failed":
       return "Firebase could not be reached. Check your internet connection and try again.";
     default:
@@ -73,27 +82,32 @@ function signInErrorMessage(error) {
   }
 }
 
-async function loadUserProfile(user) {
-  const profileRef = doc(db, "users", user.uid);
-  const profile = await getDoc(profileRef);
+async function signInWithStudentId(studentId, password) {
+  const authEmails = await resolveAuthEmails(studentId);
+  let lastError = null;
 
-  if (!profile.exists()) {
-    return null;
+  for (const authEmail of authEmails) {
+    try {
+      await signInWithEmailAndPassword(auth, authEmail, password);
+      return authEmail;
+    } catch (error) {
+      lastError = error;
+      if (!isRecoverableSignInError(error.code)) {
+        throw error;
+      }
+    }
   }
 
-  const data = profile.data();
-  const studentNo = data.studentNo ?? authEmailToStudentId(user.email);
-
-  return {
-    ...data,
-    studentNo,
-  };
+  throw lastError ?? new Error("Sign-in failed.");
 }
 
-async function requireAdmin(user) {
-  const profile = await loadUserProfile(user);
-  return profile?.role === "admin" ? profile : null;
-}
+passwordToggle.addEventListener("click", () => {
+  const isHidden = passwordInput.type === "password";
+  passwordInput.type = isHidden ? "text" : "password";
+  passwordToggle.setAttribute("aria-pressed", String(isHidden));
+  passwordToggle.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+  passwordToggleIcon.className = isHidden ? "bi bi-eye-slash" : "bi bi-eye";
+});
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -107,18 +121,23 @@ loginForm.addEventListener("submit", async (event) => {
     return;
   }
 
+  pendingStudentId = studentId;
   setLoginBusy(true);
+
   try {
-    const authEmail = studentIdToAuthEmail(studentId);
-    await signInWithEmailAndPassword(auth, authEmail, password);
+    await signInWithStudentId(studentId, password);
   } catch (error) {
+    pendingStudentId = null;
     console.error("Firebase sign-in failed:", error);
-    showMessage(signInErrorMessage(error));
+    showMessage(signInErrorMessage(error, studentId));
     setLoginBusy(false);
   }
 });
 
-logoutButton.addEventListener("click", () => signOut(auth));
+logoutButton.addEventListener("click", () => {
+  pendingStudentId = null;
+  signOut(auth);
+});
 
 onAuthStateChanged(auth, async (user) => {
   setLoginBusy(false);
@@ -128,10 +147,19 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  try {
-    const profile = await requireAdmin(user);
+  const studentId = pendingStudentId ?? authEmailToStudentId(user.email);
+  pendingStudentId = null;
 
-    if (!profile) {
+  if (!studentId) {
+    await signOut(auth);
+    showMessage("This account is not linked to a valid student ID.");
+    return;
+  }
+
+  try {
+    const profile = await ensureAdminProfile(user, studentId);
+
+    if (profile?.role !== "admin") {
       await signOut(auth);
       showMessage("This account is not authorized for the administrator portal.");
       return;
@@ -157,6 +185,7 @@ onAuthStateChanged(auth, async (user) => {
       );
     }
   } catch (error) {
+    console.error("Profile setup failed:", error);
     await signOut(auth);
     showMessage("Firebase is not ready. Enable Firestore and add the security rules from SETUP.md.");
   }

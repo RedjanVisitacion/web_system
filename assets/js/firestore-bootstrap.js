@@ -47,6 +47,7 @@ export async function bootstrapFirestore() {
       initializedAt: serverTimestamp(),
       collections: [
         "users",
+        "studentAccounts",
         "courses",
         "enrollments",
         "attendanceSessions",
