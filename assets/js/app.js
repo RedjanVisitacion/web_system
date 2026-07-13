@@ -1,17 +1,7 @@
-import { auth } from "./firebase-config.js?v=20260713-firebase-key-fix";
-import {
-  isValidStudentId,
-  studentIdToAuthEmail,
-  authEmailToStudentId,
-} from "./auth-helpers.js?v=20260713-student-id-login";
-import { resolveAuthEmails } from "./auth-resolver.js?v=20260713-student-id-login";
-import { bootstrapFirestore } from "./firestore-bootstrap.js?v=20260713-student-id-login";
-import { ensureAdminProfile } from "./user-profile.js?v=20260713-student-id-login";
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import { isValidStudentId } from "./auth-helpers.js?v=20260713-db-login";
+import { loginWithStudentCredentials, loginErrorMessage } from "./db-login.js?v=20260713-db-login";
+import { bootstrapFirestore } from "./firestore-bootstrap.js?v=20260713-db-login";
+import { clearSession, getSession, saveSession } from "./session.js?v=20260713-db-login";
 
 const loginForm = document.querySelector("#login-form");
 const loginButton = document.querySelector("#login-button");
@@ -25,10 +15,9 @@ const loginView = document.querySelector("#login-view");
 const dashboardView = document.querySelector("#dashboard-view");
 const signedInStudentId = document.querySelector("#signed-in-student-id");
 const signedInName = document.querySelector("#signed-in-name");
+const portalLabel = document.querySelector("#portal-label");
 const bootstrapStatus = document.querySelector("#bootstrap-status");
 const bootstrapDetail = document.querySelector("#bootstrap-detail");
-
-let pendingStudentId = null;
 
 function showMessage(text) {
   message.textContent = text;
@@ -45,11 +34,14 @@ function showLogin() {
   loginView.hidden = false;
 }
 
-function showDashboard(profile) {
-  signedInStudentId.textContent = profile.studentNo
-    ? `Student ID: ${profile.studentNo}`
+function showDashboard(user) {
+  signedInStudentId.textContent = user.studentNo
+    ? `Student ID: ${user.studentNo}`
     : "";
-  signedInName.textContent = profile.fullName ?? "Administrator";
+  signedInName.textContent = user.fullName ?? "Student";
+  portalLabel.textContent = user.role === "admin"
+    ? "Administrator Portal"
+    : "Student Portal";
   loginView.hidden = true;
   dashboardView.hidden = false;
 }
@@ -59,46 +51,34 @@ function setBootstrapStatus(title, detail) {
   bootstrapDetail.textContent = detail;
 }
 
-function isRecoverableSignInError(code) {
-  return code === "auth/invalid-credential"
-    || code === "auth/user-not-found"
-    || code === "auth/wrong-password";
-}
-
-function signInErrorMessage(error, studentId) {
-  switch (error.code) {
-    case "auth/invalid-credential":
-    case "auth/user-not-found":
-    case "auth/wrong-password":
-      return `The student ID or password is incorrect. In Firebase Authentication, the account email must be ${studentIdToAuthEmail(studentId)}.`;
-    case "auth/operation-not-allowed":
-      return "Email/Password sign-in is not enabled in Firebase Authentication.";
-    case "auth/unauthorized-domain":
-      return "This website address is not authorized in Firebase. Add ustporoq.fast-page.org under Authentication → Settings → Authorized domains.";
-    case "auth/network-request-failed":
-      return "Firebase could not be reached. Check your internet connection and try again.";
-    default:
-      return `Firebase sign-in failed (${error.code ?? "unknown error"}).`;
+async function initializeDatabaseIfAdmin(user) {
+  if (user.role !== "admin") {
+    setBootstrapStatus("Signed in", "Your attendance dashboard will open here next.");
+    return;
   }
-}
 
-async function signInWithStudentId(studentId, password) {
-  const authEmails = await resolveAuthEmails(studentId);
-  let lastError = null;
-
-  for (const authEmail of authEmails) {
-    try {
-      await signInWithEmailAndPassword(auth, authEmail, password);
-      return authEmail;
-    } catch (error) {
-      lastError = error;
-      if (!isRecoverableSignInError(error.code)) {
-        throw error;
-      }
+  try {
+    const bootstrap = await bootstrapFirestore();
+    if (bootstrap.alreadyInitialized) {
+      setBootstrapStatus("Database connected", "Collections are ready.");
+    } else {
+      setBootstrapStatus(
+        "Database initialized",
+        `Created default documents: ${bootstrap.createdPaths.join(", ")}.`,
+      );
     }
+  } catch (error) {
+    console.error("Firestore bootstrap failed:", error);
+    setBootstrapStatus(
+      "Signed in",
+      "Could not auto-create default database documents. Check Firestore rules in SETUP.md.",
+    );
   }
+}
 
-  throw lastError ?? new Error("Sign-in failed.");
+async function enterDashboard(user) {
+  showDashboard(user);
+  await initializeDatabaseIfAdmin(user);
 }
 
 passwordToggle.addEventListener("click", () => {
@@ -121,72 +101,35 @@ loginForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  pendingStudentId = studentId;
   setLoginBusy(true);
 
   try {
-    await signInWithStudentId(studentId, password);
+    const result = await loginWithStudentCredentials(studentId, password);
+
+    if (!result.ok) {
+      showMessage(loginErrorMessage(result.reason));
+      return;
+    }
+
+    saveSession(result.user);
+    await enterDashboard(result.user);
   } catch (error) {
-    pendingStudentId = null;
-    console.error("Firebase sign-in failed:", error);
-    showMessage(signInErrorMessage(error, studentId));
+    console.error("Database sign-in failed:", error);
+    showMessage("Could not reach the database. Check your internet connection and Firestore rules.");
+  } finally {
     setLoginBusy(false);
   }
 });
 
 logoutButton.addEventListener("click", () => {
-  pendingStudentId = null;
-  signOut(auth);
+  clearSession();
+  showLogin();
+  showMessage("");
 });
 
-onAuthStateChanged(auth, async (user) => {
-  setLoginBusy(false);
-
-  if (!user) {
-    showLogin();
-    return;
-  }
-
-  const studentId = pendingStudentId ?? authEmailToStudentId(user.email);
-  pendingStudentId = null;
-
-  if (!studentId) {
-    await signOut(auth);
-    showMessage("This account is not linked to a valid student ID.");
-    return;
-  }
-
-  try {
-    const profile = await ensureAdminProfile(user, studentId);
-
-    if (profile?.role !== "admin") {
-      await signOut(auth);
-      showMessage("This account is not authorized for the administrator portal.");
-      return;
-    }
-
-    showDashboard(profile);
-
-    try {
-      const bootstrap = await bootstrapFirestore();
-      if (bootstrap.alreadyInitialized) {
-        setBootstrapStatus("Firebase is connected", "Database collections are ready.");
-      } else {
-        setBootstrapStatus(
-          "Database initialized",
-          `Created default documents: ${bootstrap.createdPaths.join(", ")}.`,
-        );
-      }
-    } catch (bootstrapError) {
-      console.error("Firestore bootstrap failed:", bootstrapError);
-      setBootstrapStatus(
-        "Firebase is connected",
-        "Could not auto-create default database documents. Check Firestore rules in SETUP.md.",
-      );
-    }
-  } catch (error) {
-    console.error("Profile setup failed:", error);
-    await signOut(auth);
-    showMessage("Firebase is not ready. Enable Firestore and add the security rules from SETUP.md.");
-  }
-});
+const existingSession = getSession();
+if (existingSession) {
+  enterDashboard(existingSession);
+} else {
+  showLogin();
+}
