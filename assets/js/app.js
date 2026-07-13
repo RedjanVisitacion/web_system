@@ -123,7 +123,7 @@ loginForm.addEventListener("submit", async (event) => {
   showMessage("");
 
   if (!isValidStudentId(studentId)) {
-    showMessage("Enter a valid 10-digit student ID, for example 2023304637.");
+    showMessage("Enter a valid 10-digit student ID, for example 2025305256.");
     return;
   }
 
