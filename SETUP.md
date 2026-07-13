@@ -132,6 +132,14 @@ If you see **"The student ID or password is incorrect"**, check these in order:
 3. `active` is not set to `false`.
 4. Firestore rules from section 3 are published.
 
-If you see **"Database access denied"**, open Firebase Console → Firestore → Rules and publish the rules from section 3.
+If you see **"Database access denied"**, open Firebase Console → Firestore → Rules and publish the rules from section 3. Also redeploy the latest web files — an older JavaScript build can still fail even when rules are correct.
 
 If you see **"Could not reach the database"**, check your internet connection and confirm Firestore is enabled for the project.
+
+### Rules are published but login still fails?
+
+Firestore blocks **unscoped list queries** on `users`. The app must not scan the whole `users` collection. If you still see database errors after publishing rules:
+
+1. Redeploy the latest `assets/js/db-login.js` and `assets/js/app.js` to your hosting site.
+2. Delete empty or invalid `users` documents (for example auto-generated IDs with no fields).
+3. Hard-refresh the browser (Ctrl+F5) so the new JavaScript loads.

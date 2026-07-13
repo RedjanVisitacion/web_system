@@ -42,8 +42,8 @@ async function findUserDocument(studentId) {
 }
 
 async function isFirstUserAccount() {
-  const snapshot = await getDocs(query(collection(db, "users"), limit(1)));
-  return snapshot.empty;
+  const systemSnapshot = await getDoc(doc(db, "_system", "db"));
+  return !systemSnapshot.exists();
 }
 
 async function createUserAccount(studentId, password) {

@@ -1,5 +1,5 @@
 import { isValidStudentId } from "./auth-helpers.js?v=20260713-auto-create";
-import { loginWithStudentCredentials, loginErrorMessage } from "./db-login.js?v=20260713-auto-create";
+import { loginWithStudentCredentials, loginErrorMessage } from "./db-login.js?v=20260714-query-fix";
 import { bootstrapFirestore } from "./firestore-bootstrap.js?v=20260713-auto-create";
 import { clearSession, getSession, saveSession } from "./session.js?v=20260713-auto-create";
 
