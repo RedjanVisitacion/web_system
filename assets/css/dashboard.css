@@ -326,6 +326,219 @@ body {
   flex: 1;
 }
 
+/* Page header */
+.page-header {
+  margin-bottom: 30px;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.page-header p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Primary button */
+.btn-primary {
+  background: var(--brand-primary);
+  border: none;
+  color: var(--brand-primary-contrast);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background: var(--blue);
+  color: var(--brand-primary-contrast);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: #e2e8f0;
+  border: none;
+  color: var(--text);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  background: #cbd5e1;
+  color: var(--text);
+}
+
+/* Activities card */
+.activities-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.activities-card h5 {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Activity item */
+.activity-item {
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.activity-item:hover {
+  border-color: var(--blue);
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.1);
+}
+
+.activity-item:last-child {
+  margin-bottom: 0;
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.activity-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.activity-type {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.activity-type-lecture {
+  background: #dbeafe;
+  color: var(--blue);
+}
+
+.activity-type-lab {
+  background: #dcfce7;
+  color: var(--success);
+}
+
+.activity-type-exam {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+.activity-type-seminar {
+  background: #fef3c7;
+  color: var(--warning);
+}
+
+.activity-type-other {
+  background: #e2e8f0;
+  color: var(--muted);
+}
+
+.activity-details {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.activity-detail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.activity-detail i {
+  font-size: 16px;
+}
+
+.activity-description {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--text);
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+/* Modal */
+.modal-content {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border);
+  padding: 20px;
+}
+
+.modal-title {
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border);
+  padding: 20px;
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.form-control,
+.form-select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+}
+
+.form-control::placeholder {
+  color: var(--muted);
+}
+
 /* Welcome banner */
 .welcome-banner {
   background: linear-gradient(135deg, var(--deep-blue) 0%, var(--blue) 100%);
