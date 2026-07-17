@@ -264,6 +264,10 @@ body {
   opacity: 0.75;
 }
 
+.user-info {
+  position: relative;
+}
+
 .user-dropdown {
   position: absolute;
   right: 0;
