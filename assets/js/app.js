@@ -49,15 +49,8 @@ function showLogin() {
 }
 
 function showDashboard(user) {
-  signedInStudentId.textContent = user.studentNo
-    ? `Student ID: ${user.studentNo}`
-    : "";
-  signedInName.textContent = user.fullName ?? "Student";
-  portalLabel.textContent = user.role === "admin"
-    ? "Administrator Portal"
-    : "Student Portal";
-  loginView.hidden = true;
-  dashboardView.hidden = false;
+  // Redirect to the new dashboard page
+  window.location.href = "dashboard.html";
 }
 
 function setBootstrapStatus(title, detail) {
