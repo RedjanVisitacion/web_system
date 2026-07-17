@@ -53,7 +53,6 @@ export async function bootstrapFirestore() {
         "attendanceSessions",
         "attendance",
         "schoolSettings",
-        "activities",
       ],
       note: "Created automatically on first administrator sign-in.",
     });

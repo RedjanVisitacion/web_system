@@ -79,7 +79,7 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    match /activities/{document} {
+    match /attendanceSessions/{document} {
       allow read, create: if true;
       allow update, delete: if false;
     }
