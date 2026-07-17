@@ -38,3 +38,5 @@ jobs:
             SETUP.md
             debug.log
             attendance-web.zip
+            node_modules/**
+            .DS_Store

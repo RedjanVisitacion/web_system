@@ -96,8 +96,9 @@ async function initializeDatabaseIfAdmin(user, { created = false } = {}) {
 }
 
 async function enterDashboard(user, options = {}) {
+  // Save session and redirect immediately to dashboard
+  // Database initialization will be handled by the dashboard page
   showDashboard(user);
-  await initializeDatabaseIfAdmin(user, options);
 }
 
 passwordToggle.addEventListener("click", () => {
