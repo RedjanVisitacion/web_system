@@ -54,7 +54,7 @@ function buildUserMenu() {
   const role = user.role === "admin" ? "Administrator" : "Student";
 
   return `
-<div class="user-info position-relative" id="userMenu">
+<div id="userMenu">
   <button type="button" class="btn p-0 border-0 bg-transparent d-flex align-items-center gap-2" id="userMenuToggle">
     <div class="user-avatar">
       <i class="bi bi-person"></i>

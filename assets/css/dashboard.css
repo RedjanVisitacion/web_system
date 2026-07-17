@@ -209,6 +209,10 @@ body {
   align-items: center;
 }
 
+#userMenu {
+  position: relative;
+}
+
 #userMenuToggle {
   border-radius: 12px;
   padding: 6px 10px;
