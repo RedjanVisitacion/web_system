@@ -79,6 +79,11 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    match /activities/{document} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

@@ -1,4 +1,5 @@
 import { getSession, clearSession } from "./session.js?v=20260717-attendance";
+import { createActivity, getActivities } from "./attendance-db.js?v=20260717-attendance";
 
 const menuToggle = document.getElementById("menuToggle");
 const sidebar = document.getElementById("sidebar");
@@ -100,7 +101,7 @@ function setMenuOpen(userMenuDropdown, open) {
   else userMenuDropdown.removeAttribute("data-open");
 }
 
-// Activities storage (in-memory for now, will be replaced with Firestore)
+// Activities storage
 let activities = [];
 
 // Activity type labels
@@ -154,6 +155,17 @@ function renderActivities() {
       ` : ''}
     </div>
   `).join('');
+}
+
+// Load activities from Firestore
+async function loadActivities() {
+  try {
+    activities = await getActivities();
+    renderActivities();
+  } catch (error) {
+    console.error("Error loading activities:", error);
+    alert("Failed to load activities. Please check your internet connection.");
+  }
 }
 
 // Format date for display
@@ -244,7 +256,7 @@ function initAttendancePage() {
   }
 
   if (saveActivityBtn && createActivityForm) {
-    saveActivityBtn.addEventListener("click", () => {
+    saveActivityBtn.addEventListener("click", async () => {
       const name = document.getElementById("activityName").value.trim();
       const date = document.getElementById("activityDate").value;
       const time = document.getElementById("activityTime").value;
@@ -258,33 +270,55 @@ function initAttendancePage() {
         return;
       }
 
-      // Create activity object
-      const activity = {
-        id: Date.now().toString(),
-        name,
-        date,
-        time,
-        location,
-        type,
-        description,
-        createdAt: new Date().toISOString()
-      };
+      // Disable button while saving
+      saveActivityBtn.disabled = true;
+      saveActivityBtn.textContent = "Creating...";
 
-      // Add to activities array
-      activities.push(activity);
+      try {
+        // Create activity object
+        const activityData = {
+          name,
+          date,
+          time,
+          location,
+          type,
+          description,
+          createdBy: session.studentNo,
+          createdByFullName: session.fullName
+        };
 
-      // Render updated list
-      renderActivities();
+        // Save to Firestore
+        const activityId = await createActivity(activityData);
 
-      // Close modal and reset form
-      const modal = bootstrap.Modal.getInstance(createActivityModal);
-      if (modal) {
-        modal.hide();
+        // Add to local array with the Firestore ID
+        activities.unshift({
+          id: activityId,
+          ...activityData,
+          createdAt: new Date().toISOString()
+        });
+
+        // Render updated list
+        renderActivities();
+
+        // Close modal and reset form
+        const modal = bootstrap.Modal.getInstance(createActivityModal);
+        if (modal) {
+          modal.hide();
+        }
+        createActivityForm.reset();
+
+        // Set default date to today
+        document.getElementById("activityDate").valueAsDate = new Date();
+
+        alert("Activity created successfully!");
+      } catch (error) {
+        console.error("Error creating activity:", error);
+        alert("Failed to create activity. Please check your internet connection and try again.");
+      } finally {
+        // Re-enable button
+        saveActivityBtn.disabled = false;
+        saveActivityBtn.textContent = "Create Activity";
       }
-      createActivityForm.reset();
-
-      // Set default date to today
-      document.getElementById("activityDate").valueAsDate = new Date();
     });
   }
 
@@ -294,8 +328,8 @@ function initAttendancePage() {
     activityDateInput.valueAsDate = new Date();
   }
 
-  // Render initial activities list
-  renderActivities();
+  // Load activities from Firestore
+  loadActivities();
 }
 
 // Initialize when DOM is ready
