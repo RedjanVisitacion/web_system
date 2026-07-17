@@ -14,70 +14,11 @@
 </head>
 <body class="theme-attendance">
 
-    <!-- Sidebar Overlay for Mobile -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-header-content">
-                <div class="logo-container">
-                    <img class="sidebar-logo" src="assets/img/USTP-ORO.png" alt="USTP Logo">
-                    <div class="wordmark">
-                        <span class="wordmark-main">Attendance</span>
-                        <span class="wordmark-sub">System</span>
-                    </div>
-                </div>
-                <button class="btn-close-sidebar" id="closeSidebar">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-        </div>
-        <div class="sidebar-menu">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link active" href="dashboard.html">
-                        <i class="bi bi-house-door"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="attendance.html" id="navAttendance">
-                        <i class="bi bi-clipboard-check"></i>
-                        <span>Attendance</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="navStudents">
-                        <i class="bi bi-people"></i>
-                        <span>Students</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="navReports">
-                        <i class="bi bi-file-earmark-bar-graph"></i>
-                        <span>Reports</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="navSettings">
-                        <i class="bi bi-gear"></i>
-                        <span>Settings</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
+    <div id="layoutMount"></div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Top Navbar -->
-        <nav class="top-navbar">
-            <button class="menu-toggle" id="menuToggle">
-                <i class="bi bi-list"></i>
-            </button>
-            <div id="userMenuMount"></div>
-        </nav>
+        <div id="appbarMount"></div>
 
         <!-- Content Area -->
         <div class="content-area">
@@ -172,6 +113,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="assets/js/dashboard.js?v=20260717-dashboard"></script>
+    <script type="module" src="assets/js/dashboard.js?v=20260717-layout"></script>
 </body>
 </html>

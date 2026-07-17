@@ -1,105 +1,6 @@
-import { getSession, clearSession } from "./session.js?v=20260717-attendance";
-import { createActivity, getActivities } from "./attendance-db.js?v=20260717-attendance";
-
-const menuToggle = document.getElementById("menuToggle");
-const sidebar = document.getElementById("sidebar");
-const sidebarOverlay = document.getElementById("sidebarOverlay");
-const closeSidebar = document.getElementById("closeSidebar");
-
-// Sidebar toggle functionality
-if (menuToggle) {
-  menuToggle.addEventListener("click", function() {
-    sidebar.classList.add("active");
-    sidebarOverlay.classList.add("active");
-  });
-}
-
-if (closeSidebar) {
-  closeSidebar.addEventListener("click", function() {
-    sidebar.classList.remove("active");
-    sidebarOverlay.classList.remove("active");
-  });
-}
-
-if (sidebarOverlay) {
-  sidebarOverlay.addEventListener("click", function() {
-    sidebar.classList.remove("active");
-    sidebarOverlay.classList.remove("active");
-  });
-}
-
-// Close sidebar on nav link click (mobile)
-document.querySelectorAll(".sidebar .nav-link").forEach(link => {
-  link.addEventListener("click", function() {
-    if (window.innerWidth <= 992) {
-      sidebar.classList.remove("active");
-      sidebarOverlay.classList.remove("active");
-    }
-  });
-});
-
-// Handle window resize
-window.addEventListener("resize", function() {
-  if (window.innerWidth > 992) {
-    sidebar.classList.remove("active");
-    sidebarOverlay.classList.remove("active");
-  }
-});
-
-// User menu functionality
-function buildUserMenu() {
-  const session = getSession();
-  const user = session || {};
-  const fullName = user.fullName || "Student";
-  const studentNo = user.studentNo || "";
-  const role = user.role === "admin" ? "Administrator" : "Student";
-
-  return `
-<div id="userMenu">
-  <button type="button" class="btn p-0 border-0 bg-transparent d-flex align-items-center gap-2" id="userMenuToggle">
-    <div class="user-avatar">
-      <i class="bi bi-person"></i>
-    </div>
-    <div class="user-details">
-      <div class="user-name">${escapeHtml(fullName)}</div>
-      <div class="user-role">${role} <i class="bi bi-chevron-down chevron-down" aria-hidden="true"></i></div>
-    </div>
-  </button>
-
-  <div class="user-dropdown" id="userMenuDropdown" style="display:none;">
-    <div class="card-body p-3">
-      <div class="d-flex align-items-center gap-2 mb-2">
-        <div class="user-avatar" style="width:34px; height:34px; font-size:14px;">
-          <i class="bi bi-person"></i>
-        </div>
-        <div>
-          <div class="fw-semibold">${escapeHtml(fullName)}</div>
-          <div class="small text-muted">${studentNo ? escapeHtml(studentNo) : role}</div>
-        </div>
-      </div>
-      <hr class="my-2">
-      <a class="dropdown-item dropdown-item-logout d-flex align-items-center gap-2" href="#" id="userMenuLogoutLink">
-        <i class="bi bi-box-arrow-right"></i>
-        <span>Logout</span>
-      </a>
-    </div>
-  </div>
-</div>
-`;
-}
-
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function setMenuOpen(userMenuDropdown, open) {
-  if (!userMenuDropdown) return;
-  userMenuDropdown.style.display = open ? "block" : "none";
-  if (open) userMenuDropdown.setAttribute("data-open", "1");
-  else userMenuDropdown.removeAttribute("data-open");
-}
+import { getSession } from "./session.js?v=20260717-layout";
+import { generateSidebar, generateAppbar, initLayout, requireAdmin } from "./layout.js?v=20260717-layout";
+import { createActivity, getActivities } from "./attendance-db.js?v=20260717-layout";
 
 // Activities storage
 let activities = [];
@@ -190,57 +91,23 @@ function formatTime(timeString) {
 
 // Initialize attendance page
 function initAttendancePage() {
-  const session = getSession();
-  if (!session) {
-    // Redirect to login if no session
-    window.location.href = "index.html";
-    return;
+  // Check authentication and admin role
+  if (!requireAdmin()) return;
+
+  // Mount sidebar and appbar
+  const layoutMount = document.getElementById("layoutMount");
+  const appbarMount = document.getElementById("appbarMount");
+
+  if (layoutMount) {
+    layoutMount.innerHTML = generateSidebar('attendance');
   }
 
-  // Check if user is admin
-  if (session.role !== "admin") {
-    alert("Only administrators can manage attendance activities.");
-    window.location.href = "dashboard.html";
-    return;
+  if (appbarMount) {
+    appbarMount.innerHTML = generateAppbar();
   }
 
-  // Build user menu
-  const userMenuMount = document.getElementById("userMenuMount");
-  if (userMenuMount) {
-    userMenuMount.innerHTML = buildUserMenu();
-  }
-
-  // Setup user menu toggle
-  const userMenuToggle = document.getElementById("userMenuToggle");
-  const userMenuDropdown = document.getElementById("userMenuDropdown");
-  const userMenu = document.getElementById("userMenu");
-
-  if (userMenuToggle && userMenuDropdown) {
-    userMenuToggle.addEventListener("click", (e) => {
-      e.preventDefault();
-      const isOpen = userMenuDropdown.getAttribute("data-open") === "1";
-      setMenuOpen(userMenuDropdown, !isOpen);
-    });
-  }
-
-  // Close dropdown when clicking outside
-  document.addEventListener("click", (e) => {
-    if (!userMenuDropdown || !userMenu) return;
-    if (userMenuDropdown.getAttribute("data-open") !== "1") return;
-    if (!userMenu.contains(e.target)) {
-      setMenuOpen(userMenuDropdown, false);
-    }
-  });
-
-  // Handle logout
-  const userMenuLogoutLink = document.getElementById("userMenuLogoutLink");
-  if (userMenuLogoutLink) {
-    userMenuLogoutLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      clearSession();
-      window.location.href = "index.html";
-    });
-  }
+  // Initialize layout functionality
+  initLayout();
 
   // Setup create activity modal
   const createActivityBtn = document.getElementById("createActivityBtn");
@@ -255,8 +122,16 @@ function initAttendancePage() {
     });
   }
 
+  if (createActivityForm) {
+    createActivityForm.addEventListener("submit", async (e) => {
+      e.preventDefault(); // Prevent form submission and page refresh
+    });
+  }
+
   if (saveActivityBtn && createActivityForm) {
-    saveActivityBtn.addEventListener("click", async () => {
+    saveActivityBtn.addEventListener("click", async (e) => {
+      e.preventDefault(); // Prevent form submission
+      const session = getSession();
       const name = document.getElementById("activityName").value.trim();
       const date = document.getElementById("activityDate").value;
       const time = document.getElementById("activityTime").value;
