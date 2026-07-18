@@ -24,6 +24,7 @@ jobs:
           test -f index.html
           test -f dashboard.html
           test -f attendance.html
+          test -f attendance/index.html
 
       - name: Upload website files with FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
@@ -46,3 +47,8 @@ jobs:
             attendance-web.zip
             node_modules/**
             .DS_Store
+
+      - name: Verify attendance page is live
+        run: |
+          sleep 15
+          curl -fsSL "https://ustporoq.fast-page.org/attendance/" | grep -q "Attendance Management"

@@ -1,9 +1,9 @@
-import { getSession, clearSession } from "./session.js?v=20260718-nav-fix";
+import { getSession, clearSession } from "./session.js?v=20260718-attendance-page";
 
 const APP_ROUTES = {
   login: "/index.html",
   dashboard: "/dashboard.html",
-  attendance: "/attendance.html",
+  attendance: "/attendance/",
 };
 
 /**
@@ -47,7 +47,7 @@ export function generateSidebar(activePage = "dashboard") {
       <div class="sidebar-header">
         <div class="sidebar-header-content">
           <div class="logo-container">
-            <img class="sidebar-logo" src="assets/img/USTP-ORO.png" alt="USTP Logo">
+            <img class="sidebar-logo" src="/assets/img/USTP-ORO.png" alt="USTP Logo">
             <div class="wordmark">
               <span class="wordmark-main">Attendance</span>
               <span class="wordmark-sub">System</span>
@@ -182,27 +182,19 @@ export function initLayout() {
   document.querySelectorAll(".sidebar .nav-link").forEach(link => {
     link.addEventListener("click", function(event) {
       const href = link.getAttribute("href");
-      if (!href || href === "#") {
+      if (!href || href === "#" || href.startsWith("#")) {
         event.preventDefault();
         return;
       }
 
-      if (href.endsWith(".html")) {
-        event.preventDefault();
-
-        if (window.innerWidth <= 992) {
-          sidebar.classList.remove("active");
-          sidebarOverlay.classList.remove("active");
-        }
-
-        navigateToAppPage(href);
-        return;
-      }
+      event.preventDefault();
 
       if (window.innerWidth <= 992) {
         sidebar.classList.remove("active");
         sidebarOverlay.classList.remove("active");
       }
+
+      navigateToAppPage(href);
     });
   });
 

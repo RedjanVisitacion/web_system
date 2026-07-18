@@ -1,5 +1,5 @@
-import { getSession } from "./session.js?v=20260718-nav-fix";
-import { mountPageLayout, requireAuth, isAdmin } from "./layout.js?v=20260718-nav-fix";
+import { getSession } from "./session.js?v=20260718-attendance-page";
+import { mountPageLayout, requireAuth, isAdmin } from "./layout.js?v=20260718-attendance-page";
 
 // Activities storage
 let activities = [];
@@ -199,7 +199,7 @@ async function initAttendancePage() {
   }
 
   try {
-    const { createActivity, getActivities } = await import("./attendance-db.js?v=20260718-attendance-nav");
+    const { createActivity, getActivities } = await import("./attendance-db.js?v=20260718-attendance-page");
     setupAttendanceFeatures(createActivity, getActivities);
   } catch (error) {
     console.error("Failed to initialize attendance features:", error);
