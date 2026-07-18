@@ -185,7 +185,8 @@ body {
   align-items: center;
   position: sticky;
   top: 0;
-  z-index: 999;
+  z-index: 1000;
+  width: 100%;
 }
 
 .menu-toggle {
@@ -318,6 +319,25 @@ body {
   background: #fff0f0;
   color: #dc3545;
   text-decoration: none;
+}
+
+/* Modal positioning fixes */
+.modal {
+  z-index: 1055;
+}
+
+.modal-backdrop {
+  z-index: 1050;
+}
+
+.modal-dialog {
+  margin: 1rem;
+}
+
+.modal-dialog-centered {
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - 1rem);
 }
 
 /* Content area */
