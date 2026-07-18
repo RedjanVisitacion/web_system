@@ -1,6 +1,6 @@
-import { getSession } from "./session.js?v=20260717-layout";
-import { generateSidebar, generateAppbar, initLayout, requireAdmin } from "./layout.js?v=20260717-layout";
-import { createActivity, getActivities } from "./attendance-db.js?v=20260717-layout";
+import { getSession } from "./session.js?v=20260718-profile-dropdown";
+import { generateSidebar, generateAppbar, initLayout, requireAdmin } from "./layout.js?v=20260718-profile-dropdown";
+import { createActivity, getActivities } from "./attendance-db.js?v=20260718-profile-dropdown";
 
 // Activities storage
 let activities = [];

@@ -1,5 +1,5 @@
-import { getSession } from "./session.js?v=20260717-layout";
-import { generateSidebar, generateAppbar, initLayout, requireAuth } from "./layout.js?v=20260717-layout";
+import { getSession } from "./session.js?v=20260718-profile-dropdown";
+import { generateSidebar, generateAppbar, initLayout, requireAuth } from "./layout.js?v=20260718-profile-dropdown";
 
 // Initialize dashboard
 function initDashboard() {

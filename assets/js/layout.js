@@ -1,4 +1,4 @@
-import { getSession, clearSession } from "./session.js?v=20260717-layout";
+import { getSession, clearSession } from "./session.js?v=20260718-profile-dropdown";
 
 /**
  * Generate sidebar HTML with active navigation item
@@ -15,7 +15,7 @@ export function generateSidebar(activePage = 'dashboard') {
 
   const navItems = pages.map(page => `
     <li class="nav-item">
-      <a class="nav-link ${page.id === activePage ? 'active' : ''}" href="${page.href}" ${page.id !== 'dashboard' && page.id !== 'attendance' ? `id="nav${page.id.charAt(0).toUpperCase() + page.id.slice(1)}"` : ''}>
+      <a class="nav-link ${page.id === activePage ? 'active' : ''}" href="${page.href}" id="nav${page.id.charAt(0).toUpperCase() + page.id.slice(1)}">
         <i class="bi ${page.icon}"></i>
         <span>${page.label}</span>
       </a>
@@ -80,7 +80,7 @@ export function generateUserMenu() {
 
   return `
 <div id="userMenu">
-  <button type="button" class="btn p-0 border-0 bg-transparent d-flex align-items-center gap-2" id="userMenuToggle">
+  <button type="button" class="user-menu-toggle" id="userMenuToggle">
     <div class="user-avatar">
       <i class="bi bi-person"></i>
     </div>
@@ -91,18 +91,18 @@ export function generateUserMenu() {
   </button>
 
   <div class="user-dropdown" id="userMenuDropdown" style="display:none;">
-    <div class="card-body p-3">
-      <div class="d-flex align-items-center gap-2 mb-2">
-        <div class="user-avatar" style="width:34px; height:34px; font-size:14px;">
+    <div class="user-dropdown-body">
+      <div class="dropdown-user-info">
+        <div class="user-avatar user-avatar--sm">
           <i class="bi bi-person"></i>
         </div>
-        <div>
-          <div class="fw-semibold">${escapeHtml(fullName)}</div>
-          <div class="small text-muted">${studentNo ? escapeHtml(studentNo) : role}</div>
+        <div class="dropdown-user-text">
+          <div class="dropdown-user-name">${escapeHtml(fullName)}</div>
+          <div class="dropdown-user-meta">${studentNo ? escapeHtml(studentNo) : role}</div>
         </div>
       </div>
-      <hr class="my-2">
-      <a class="dropdown-item dropdown-item-logout d-flex align-items-center gap-2" href="#" id="userMenuLogoutLink">
+      <hr class="user-dropdown-divider">
+      <a class="dropdown-item dropdown-item-logout" href="#" id="userMenuLogoutLink">
         <i class="bi bi-box-arrow-right"></i>
         <span>Logout</span>
       </a>
@@ -143,9 +143,15 @@ export function initLayout() {
     });
   }
 
-  // Close sidebar on nav link click (mobile)
+  // Close sidebar on nav link click (mobile); block placeholder links
   document.querySelectorAll(".sidebar .nav-link").forEach(link => {
-    link.addEventListener("click", function() {
+    link.addEventListener("click", function(event) {
+      const href = link.getAttribute("href");
+      if (!href || href === "#") {
+        event.preventDefault();
+        return;
+      }
+
       if (window.innerWidth <= 992) {
         sidebar.classList.remove("active");
         sidebarOverlay.classList.remove("active");
