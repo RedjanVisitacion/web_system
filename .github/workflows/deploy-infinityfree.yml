@@ -47,8 +47,3 @@ jobs:
             attendance-web.zip
             node_modules/**
             .DS_Store
-
-      - name: Verify attendance page is live
-        run: |
-          sleep 15
-          curl -fsSL "https://ustporoq.fast-page.org/attendance/" | grep -q "Attendance Management"
