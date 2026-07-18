@@ -1,25 +1,11 @@
-import { getSession } from "./session.js?v=20260718-profile-dropdown";
-import { generateSidebar, generateAppbar, initLayout, requireAuth } from "./layout.js?v=20260718-profile-dropdown";
+import { getSession } from "./session.js?v=20260718-attendance-nav";
+import { mountPageLayout, requireAuth } from "./layout.js?v=20260718-attendance-nav";
 
 // Initialize dashboard
 function initDashboard() {
-  // Check authentication
   if (!requireAuth()) return;
 
-  // Mount sidebar and appbar
-  const layoutMount = document.getElementById("layoutMount");
-  const appbarMount = document.getElementById("appbarMount");
-
-  if (layoutMount) {
-    layoutMount.innerHTML = generateSidebar('dashboard');
-  }
-
-  if (appbarMount) {
-    appbarMount.innerHTML = generateAppbar();
-  }
-
-  // Initialize layout functionality
-  initLayout();
+  mountPageLayout("dashboard");
 
   // Display user information
   const session = getSession();

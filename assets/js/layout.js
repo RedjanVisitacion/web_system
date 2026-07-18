@@ -1,4 +1,4 @@
-import { getSession, clearSession } from "./session.js?v=20260718-profile-dropdown";
+import { getSession, clearSession } from "./session.js?v=20260718-attendance-nav";
 
 /**
  * Generate sidebar HTML with active navigation item
@@ -110,6 +110,25 @@ export function generateUserMenu() {
   </div>
 </div>
 `;
+}
+
+/**
+ * Mount sidebar and appbar, then wire shared layout behavior.
+ * @param {string} activePage - Active sidebar page id
+ */
+export function mountPageLayout(activePage = "dashboard") {
+  const layoutMount = document.getElementById("layoutMount");
+  const appbarMount = document.getElementById("appbarMount");
+
+  if (layoutMount) {
+    layoutMount.innerHTML = generateSidebar(activePage);
+  }
+
+  if (appbarMount) {
+    appbarMount.innerHTML = generateAppbar();
+  }
+
+  initLayout();
 }
 
 /**
