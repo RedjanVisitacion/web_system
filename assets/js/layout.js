@@ -1,16 +1,32 @@
-import { getSession, clearSession } from "./session.js?v=20260718-attendance-nav";
+import { getSession, clearSession } from "./session.js?v=20260718-nav-fix";
+
+const APP_ROUTES = {
+  login: "/index.html",
+  dashboard: "/dashboard.html",
+  attendance: "/attendance.html",
+};
+
+/**
+ * Navigate to an in-app HTML page from the site root.
+ * @param {string} path - Root-relative path such as /attendance.html
+ */
+export function navigateToAppPage(path) {
+  if (!path || path === "#") return;
+  const target = path.startsWith("/") ? path : `/${path.replace(/^\.\//, "")}`;
+  window.location.assign(target);
+}
 
 /**
  * Generate sidebar HTML with active navigation item
  * @param {string} activePage - The page that should be marked as active
  * @returns {string} - Sidebar HTML
  */
-export function generateSidebar(activePage = 'dashboard') {
+export function generateSidebar(activePage = "dashboard") {
   const pages = [
-    { id: 'dashboard', href: 'dashboard.html', icon: 'bi-house-door', label: 'Dashboard' },
-    { id: 'attendance', href: 'attendance.html', icon: 'bi-clipboard-check', label: 'Attendance' },
-    { id: 'students', href: '#', icon: 'bi-people', label: 'Students' },
-    { id: 'reports', href: '#', icon: 'bi-file-earmark-bar-graph', label: 'Reports' }
+    { id: "dashboard", href: APP_ROUTES.dashboard, icon: "bi-house-door", label: "Dashboard" },
+    { id: "attendance", href: APP_ROUTES.attendance, icon: "bi-clipboard-check", label: "Attendance" },
+    { id: "students", href: "#", icon: "bi-people", label: "Students" },
+    { id: "reports", href: "#", icon: "bi-file-earmark-bar-graph", label: "Reports" }
   ];
 
   const navItems = pages.map(page => `
@@ -171,6 +187,18 @@ export function initLayout() {
         return;
       }
 
+      if (href.endsWith(".html")) {
+        event.preventDefault();
+
+        if (window.innerWidth <= 992) {
+          sidebar.classList.remove("active");
+          sidebarOverlay.classList.remove("active");
+        }
+
+        navigateToAppPage(href);
+        return;
+      }
+
       if (window.innerWidth <= 992) {
         sidebar.classList.remove("active");
         sidebarOverlay.classList.remove("active");
@@ -220,7 +248,7 @@ export function initLayout() {
     userMenuLogoutLink.addEventListener("click", (e) => {
       e.preventDefault();
       clearSession();
-      window.location.href = "index.html";
+      navigateToAppPage(APP_ROUTES.login);
     });
   }
 }
@@ -266,7 +294,7 @@ export function isAdmin() {
  */
 export function requireAuth() {
   if (!isAuthenticated()) {
-    window.location.href = "index.html";
+    navigateToAppPage(APP_ROUTES.login);
     return false;
   }
   return true;
@@ -279,7 +307,7 @@ export function requireAdmin() {
   if (!requireAuth()) return false;
   if (!isAdmin()) {
     alert("Access denied. Administrators only.");
-    window.location.href = "dashboard.html";
+    navigateToAppPage(APP_ROUTES.dashboard);
     return false;
   }
   return true;

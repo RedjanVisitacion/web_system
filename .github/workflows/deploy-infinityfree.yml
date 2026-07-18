@@ -19,6 +19,12 @@ jobs:
       - name: Check out website source
         uses: actions/checkout@v4
 
+      - name: Verify required pages exist
+        run: |
+          test -f index.html
+          test -f dashboard.html
+          test -f attendance.html
+
       - name: Upload website files with FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:

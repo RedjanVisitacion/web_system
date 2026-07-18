@@ -50,7 +50,7 @@ function showLogin() {
 
 function showDashboard(user) {
   // Redirect to the new dashboard page
-  window.location.href = "dashboard.html";
+  window.location.assign("/dashboard.html");
 }
 
 function setBootstrapStatus(title, detail) {

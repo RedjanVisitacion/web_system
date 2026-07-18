@@ -1,5 +1,5 @@
-import { getSession } from "./session.js?v=20260718-attendance-nav";
-import { mountPageLayout, requireAuth } from "./layout.js?v=20260718-attendance-nav";
+import { getSession } from "./session.js?v=20260718-nav-fix";
+import { mountPageLayout, requireAuth } from "./layout.js?v=20260718-nav-fix";
 
 // Initialize dashboard
 function initDashboard() {
