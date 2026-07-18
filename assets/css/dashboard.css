@@ -212,6 +212,7 @@ body {
 
 #userMenu {
   position: relative;
+  z-index: 1001;
 }
 
 #userMenuToggle {
