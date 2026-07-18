@@ -10,8 +10,7 @@ export function generateSidebar(activePage = 'dashboard') {
     { id: 'dashboard', href: 'dashboard.html', icon: 'bi-house-door', label: 'Dashboard' },
     { id: 'attendance', href: 'attendance.html', icon: 'bi-clipboard-check', label: 'Attendance' },
     { id: 'students', href: '#', icon: 'bi-people', label: 'Students' },
-    { id: 'reports', href: '#', icon: 'bi-file-earmark-bar-graph', label: 'Reports' },
-    { id: 'settings', href: '#', icon: 'bi-gear', label: 'Settings' }
+    { id: 'reports', href: '#', icon: 'bi-file-earmark-bar-graph', label: 'Reports' }
   ];
 
   const navItems = pages.map(page => `
